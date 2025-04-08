@@ -14,6 +14,13 @@ export const initMockData = () => {
       },
       {
         id: 2,
+        username: 'adminjumael',
+        password: 'admin2005', // In a real app, this would be hashed
+        email: 'jumaelkamga1@gmail.com',
+        role: 'admin'
+      },
+      {
+        id: 3,
         username: 'user',
         password: 'user123', // In a real app, this would be hashed
         email: 'user@example.com',
@@ -42,60 +49,6 @@ export const initMockData = () => {
         image: '/placeholder.svg',
         category: 'Audio',
         featured: true
-      },
-      {
-        id: 3,
-        name: 'Smartwatch Pro',
-        description: 'Track your fitness and stay connected with notifications and apps.',
-        price: 249.99,
-        image: '/placeholder.svg',
-        category: 'Wearables',
-        featured: true
-      },
-      {
-        id: 4,
-        name: 'Tablet Computer',
-        description: '10-inch tablet with 128GB storage and all-day battery life.',
-        price: 399.99,
-        image: '/placeholder.svg',
-        category: 'Computers',
-        featured: false
-      },
-      {
-        id: 5,
-        name: 'Game Controller',
-        description: 'Precision gaming controller compatible with multiple platforms.',
-        price: 59.99,
-        image: '/placeholder.svg',
-        category: 'Gaming',
-        featured: false
-      },
-      {
-        id: 6,
-        name: 'Smart Home Hub',
-        description: 'Control all your smart home devices from one central hub.',
-        price: 149.99,
-        image: '/placeholder.svg',
-        category: 'Smart Home',
-        featured: false
-      },
-      {
-        id: 7,
-        name: 'Wireless Earbuds',
-        description: 'True wireless earbuds with premium sound quality.',
-        price: 89.99,
-        image: '/placeholder.svg',
-        category: 'Audio',
-        featured: false
-      },
-      {
-        id: 8,
-        name: 'Digital Camera',
-        description: '24MP digital camera with 4K video recording capabilities.',
-        price: 599.99,
-        image: '/placeholder.svg',
-        category: 'Photography',
-        featured: false
       }
     ];
     saveProducts(products);

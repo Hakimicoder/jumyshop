@@ -25,12 +25,12 @@ export default function Home() {
                 Latest Audio System
               </h1>
               <p className="text-xl text-gray-300">
-                Premium sound quality with smart features.
+                Premium sound quality with smart features. Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur reiciendis quo in impedit explicabo nulla!
               </p>
               <div className="pt-4">
-                <span className="bg-primary text-black font-bold px-4 py-2 inline-block">
+                {/* <span className="bg-primary text-black font-bold px-4 py-2 inline-block">
                   Offer 20% off
-                </span>
+                </span> */}
               </div>
               <div>
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-black">
@@ -40,7 +40,7 @@ export default function Home() {
             </div>
             <div className="hidden md:block">
               <img 
-                src="/lovable-uploads/e5f300e2-516e-4a8a-8801-7d9ee396ac30.png" 
+                src="/uploads/headphone2.png" 
                 alt="Featured Audio System" 
                 className="w-full h-auto"
               />
@@ -83,7 +83,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">Featured Products</h2>
-            <Link to="/login" className="flex items-center text-primary font-medium">
+            <Link to="/products" className="flex items-center text-primary font-medium">
               View All <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
@@ -113,7 +113,7 @@ export default function Home() {
             <Button size="lg" asChild>
               <Link to="/register">Create Account</Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10" asChild>
+            <Button size="lg" className="text-white bg-transparent border-white hover:bg-primary hover:text-black" asChild>
               <Link to="/login">Log In</Link>
             </Button>
           </div>

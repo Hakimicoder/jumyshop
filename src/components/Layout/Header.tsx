@@ -37,7 +37,7 @@ export default function Header() {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold text-zinc-950">
-                Jumy<span className="text-primary">Shop</span>
+                    J-<span className="text-primary">Shop</span>
               </span>
             </Link>
           </div>

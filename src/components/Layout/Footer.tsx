@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <h3 className="text-2xl font-bold">
-              Jumy<span className="text-primary">Shop</span>
+              J-<span className="text-primary">Shop</span>
             </h3>
             <p className="text-gray-300">
               Your one-stop shop for all electronic needs.
@@ -64,10 +64,10 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <address className="not-italic text-gray-300">
-              <p>123 Electronics Way</p>
-              <p>Tech City, TC 12345</p>
+              <p>Douala - Cameroon</p>
+              <p>Yaounde - Cameroon</p>
               <p className="mt-2">info@jumyshop.com</p>
-              <p>(123) 456-7890</p>
+              <p>(237) 679454785</p>
             </address>
           </div>
         </div>
