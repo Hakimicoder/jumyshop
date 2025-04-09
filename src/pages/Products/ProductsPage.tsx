@@ -17,8 +17,7 @@ export default function ProductsPage() {
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);
 
-  // Fonction pour charger les produits
-  const loadProducts = () => {
+  useEffect(() => {
     const allProducts = getProducts();
     setProducts(allProducts);
     
@@ -35,31 +34,6 @@ export default function ProductsPage() {
       setMaxPrice(max);
       setPriceRange([min, max]);
     }
-  };
-
-  // Charger les produits au montage du composant
-  useEffect(() => {
-    loadProducts();
-
-    // Écouter les événements de storage pour détecter les changements de produits
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'products') {
-        loadProducts();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Créer un intervalle de vérification supplémentaire pour s'assurer que les produits sont à jour
-    // Ce sera utile si l'admin ajoute un produit dans la même fenêtre/onglet
-    const interval = setInterval(() => {
-      loadProducts();
-    }, 5000); // Vérifier toutes les 5 secondes
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
   }, []);
 
   useEffect(() => {
