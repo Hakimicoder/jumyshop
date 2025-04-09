@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getUsers, setUser } from '@/lib/utils';
+import { getUsers, setUser, getUser } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,8 +11,17 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Vérifie si l'utilisateur connecté est un admin
+  useEffect(() => {
+    const currentUser = getUser();
+    if (currentUser && currentUser.role === 'admin') {
+      setIsAdmin(true);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,41 +111,44 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+          {/* N'affiche les boutons de démo que si l'utilisateur est un administrateur */}
+          {isAdmin && (
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-2 text-muted-foreground">
+                    Or login with demo credentials
+                  </span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-muted-foreground">
-                  Or login with demo credentials
-                </span>
-              </div>
-            </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setUsername('user');
-                  setPassword('user123');
-                }}
-              >
-                User Demo
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setUsername('admin');
-                  setPassword('admin123');
-                }}
-              >
-                Admin Demo
-              </Button>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setUsername('user');
+                    setPassword('user123');
+                  }}
+                >
+                  User Demo
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setUsername('adminjumael');
+                    setPassword('admin2005');
+                  }}
+                >
+                  Admin Demo
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
