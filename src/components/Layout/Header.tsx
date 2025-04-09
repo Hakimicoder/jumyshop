@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, LogOut } from 'lucide-react';
@@ -37,7 +36,7 @@ export default function Header() {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold text-zinc-950">
-                Jumy<span className="text-primary">Shop</span>
+                Electro<span className="text-primary">Shop</span>
               </span>
             </Link>
           </div>
