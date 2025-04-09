@@ -1,3 +1,4 @@
+
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 
 export default function Footer() {
@@ -7,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <h3 className="text-2xl font-bold">
-              Jumy<span className="text-primary">Shop</span>
+              Electro<span className="text-primary">Shop</span>
             </h3>
             <p className="text-gray-300">
               Your one-stop shop for all electronic needs.
@@ -66,13 +67,13 @@ export default function Footer() {
             <address className="not-italic text-gray-300">
               <p>123 Electronics Way</p>
               <p>Tech City, TC 12345</p>
-              <p className="mt-2">info@jumyshop.com</p>
+              <p className="mt-2">info@electroshop.com</p>
               <p>(123) 456-7890</p>
             </address>
           </div>
         </div>
         <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-300">
-          <p>&copy; {new Date().getFullYear()} JumyShop. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ElectroShop. All rights reserved.</p>
         </div>
       </div>
     </footer>
