@@ -63,7 +63,7 @@ export default function ProductTable({ products, loading, onEdit, onDelete }: Pr
                         {product.name}
                       </div>
                       <div className="text-sm text-gray-500 line-clamp-1">
-                        {product.subtitle}
+                        {product.subtitle || product.description}
                       </div>
                     </div>
                   </div>

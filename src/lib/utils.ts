@@ -2,6 +2,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { supabase } from "@/integrations/supabase/client";
+import { Product, CartItem, User } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -78,21 +79,23 @@ export function saveProducts(products: Product[]): void {
   localStorage.setItem('products', JSON.stringify(products));
 }
 
-export function getProducts(): Product[] {
+export async function getProducts(): Promise<Product[]> {
   // First try to get products from Supabase
-  return getProductsFromSupabase().then(products => {
+  try {
+    const products = await getProductsFromSupabase();
     if (products && products.length > 0) {
       return products;
     }
     
-    // Fall back to localStorage if no products in Supabase or if fetch fails
+    // Fall back to localStorage if no products in Supabase
     const productsStr = localStorage.getItem('products');
     return productsStr ? JSON.parse(productsStr) : [];
-  }).catch(() => {
+  } catch (err) {
     // If Supabase query fails, fall back to localStorage
+    console.error("Error fetching products from Supabase:", err);
     const productsStr = localStorage.getItem('products');
     return productsStr ? JSON.parse(productsStr) : [];
-  });
+  }
 }
 
 // Utility function to get products from Supabase

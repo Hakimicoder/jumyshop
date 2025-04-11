@@ -43,7 +43,7 @@ export default function ProductForm({
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
           <Label htmlFor="subtitle" className="text-right">
-            Subtitle*
+            Short Description*
           </Label>
           <Input
             id="subtitle"
@@ -51,7 +51,7 @@ export default function ProductForm({
             value={product.subtitle || ''}
             onChange={onInputChange}
             className="col-span-3"
-            placeholder="Brief description - shown on cards"
+            placeholder="Brief description - shown on cards (max 30 words)"
           />
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
