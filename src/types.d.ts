@@ -4,6 +4,8 @@ import { Database } from './integrations/supabase/client';
 type Product = Database['public']['Tables']['products']['Row'] & {
   description?: string;
   all?: string;
+  subtitle?: string;
+  full_description?: string;
 };
 
 interface CartItem {

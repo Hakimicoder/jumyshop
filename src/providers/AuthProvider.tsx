@@ -3,12 +3,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface AuthContextType extends AuthState {
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -157,8 +151,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = {
-    ...state,
+  const value: AuthContextType = {
+    user: state.user,
+    session: state.session,
+    isLoading: state.isLoading,
     signIn,
     signUp,
     signOut,

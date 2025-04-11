@@ -1,5 +1,5 @@
-
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from 'react-router-dom';
 import { ChevronRight, Truck, CreditCard, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
