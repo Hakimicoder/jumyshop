@@ -19,6 +19,15 @@ interface AuthState {
   isLoading: boolean;
 }
 
+interface AuthContextType {
+  user: Profile | null;
+  session: any | null;
+  isLoading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<void>;
+}
+
 interface User {
   id: number;
   username: string;

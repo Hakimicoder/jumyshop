@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
-import { Textarea } from '@/components/ui/textarea';
+import { Product } from '@/types';
+import ProductTable from '@/components/Admin/ProductTable';
+import ProductForm from '@/components/Admin/ProductForm';
+import ProductDialog from '@/components/Admin/ProductDialog';
+import DeleteProductDialog from '@/components/Admin/DeleteProductDialog';
 
 export default function ProductsManagement() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -61,16 +61,22 @@ export default function ProductsManagement() {
     }));
   };
 
-  const handleAddProduct = async () => {
+  const validateProduct = () => {
     // Validate required fields
-    if (!currentProduct.name || !currentProduct.subtitle || !currentProduct.full_description || !currentProduct.price || !currentProduct.category) {
+    if (!currentProduct.name || !currentProduct.subtitle || !currentProduct.full_description || 
+        currentProduct.price === undefined || !currentProduct.category) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
         variant: "destructive"
       });
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleAddProduct = async () => {
+    if (!validateProduct()) return;
 
     try {
       const { data, error } = await supabase
@@ -107,15 +113,7 @@ export default function ProductsManagement() {
   };
 
   const handleEditProduct = async () => {
-    // Validate required fields
-    if (!currentProduct.name || !currentProduct.subtitle || !currentProduct.full_description || !currentProduct.price === undefined || !currentProduct.category) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!validateProduct()) return;
 
     try {
       const { error } = await supabase
@@ -206,346 +204,54 @@ export default function ProductsManagement() {
       </div>
 
       {/* Products Table */}
-      <div className="border rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Product
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Price
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Featured
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center">
-                  Loading products...
-                </td>
-              </tr>
-            ) : products.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-muted-foreground">
-                  No products available.
-                </td>
-              </tr>
-            ) : (
-              products.map((product) => (
-                <tr key={product.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded overflow-hidden">
-                        <img
-                          src={product.image || '/placeholder.svg'}
-                          alt={product.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="font-medium text-gray-900">
-                          {product.name}
-                        </div>
-                        <div className="text-sm text-gray-500 line-clamp-1">
-                          {product.subtitle}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100">
-                      {product.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${product.price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {product.featured ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => openEditDialog(product)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <Pencil className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => openDeleteDialog(product)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ProductTable 
+        products={products}
+        loading={loading}
+        onEdit={openEditDialog}
+        onDelete={openDeleteDialog}
+      />
 
       {/* Add Product Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name*
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                value={currentProduct.name || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="subtitle" className="text-right">
-                Subtitle*
-              </Label>
-              <Input
-                id="subtitle"
-                name="subtitle"
-                value={currentProduct.subtitle || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Brief description - shown on cards"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="full_description" className="text-right">
-                Full Description*
-              </Label>
-              <Textarea
-                id="full_description"
-                name="full_description"
-                value={currentProduct.full_description || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Detailed description - visible on product page"
-                rows={4}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Category*
-              </Label>
-              <Input
-                id="category"
-                name="category"
-                value={currentProduct.category || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
-                Price*
-              </Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={currentProduct.price || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="image"
-                name="image"
-                value={currentProduct.image || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="/placeholder.svg"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="text-right">
-                <Label htmlFor="featured">Featured</Label>
-              </div>
-              <div className="flex items-center space-x-2 col-span-3">
-                <Checkbox
-                  id="featured"
-                  checked={Boolean(currentProduct.featured)}
-                  onCheckedChange={handleCheckboxChange}
-                />
-                <label
-                  htmlFor="featured"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Display as featured product
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddProduct}>Save Product</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ProductDialog 
+        open={isAddDialogOpen} 
+        onOpenChange={setIsAddDialogOpen}
+        title="Add New Product"
+      >
+        <ProductForm 
+          product={currentProduct}
+          onInputChange={handleInputChange}
+          onCheckboxChange={handleCheckboxChange}
+          onSubmit={handleAddProduct}
+          onCancel={() => setIsAddDialogOpen(false)}
+          submitLabel="Save Product"
+          title="Add New Product"
+        />
+      </ProductDialog>
 
       {/* Edit Product Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">
-                Name*
-              </Label>
-              <Input
-                id="edit-name"
-                name="name"
-                value={currentProduct.name || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="edit-subtitle" className="text-right">
-                Subtitle*
-              </Label>
-              <Input
-                id="edit-subtitle"
-                name="subtitle"
-                value={currentProduct.subtitle || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Brief description - shown on cards"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="edit-full_description" className="text-right">
-                Full Description*
-              </Label>
-              <Textarea
-                id="edit-full_description"
-                name="full_description"
-                value={currentProduct.full_description || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Detailed description - visible on product page"
-                rows={4}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-category" className="text-right">
-                Category*
-              </Label>
-              <Input
-                id="edit-category"
-                name="category"
-                value={currentProduct.category || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-price" className="text-right">
-                Price*
-              </Label>
-              <Input
-                id="edit-price"
-                name="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={currentProduct.price || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-image" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="edit-image"
-                name="image"
-                value={currentProduct.image || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="text-right">
-                <Label htmlFor="edit-featured">Featured</Label>
-              </div>
-              <div className="flex items-center space-x-2 col-span-3">
-                <Checkbox
-                  id="edit-featured"
-                  checked={Boolean(currentProduct.featured)}
-                  onCheckedChange={handleCheckboxChange}
-                />
-                <label
-                  htmlFor="edit-featured"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Display as featured product
-                </label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleEditProduct}>Update Product</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ProductDialog 
+        open={isEditDialogOpen} 
+        onOpenChange={setIsEditDialogOpen}
+        title="Edit Product"
+      >
+        <ProductForm 
+          product={currentProduct}
+          onInputChange={handleInputChange}
+          onCheckboxChange={handleCheckboxChange}
+          onSubmit={handleEditProduct}
+          onCancel={() => setIsEditDialogOpen(false)}
+          submitLabel="Update Product"
+          title="Edit Product"
+        />
+      </ProductDialog>
 
       {/* Delete Product Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete "{currentProduct.name}"?</p>
-          <p className="text-sm text-muted-foreground">
-            This action cannot be undone.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteProduct}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteProductDialog 
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        product={currentProduct}
+        onDelete={handleDeleteProduct}
+      />
     </div>
   );
 }
