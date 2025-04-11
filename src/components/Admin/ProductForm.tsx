@@ -6,11 +6,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
+import ImageUploader from '@/components/common/ImageUploader';
 
 interface ProductFormProps {
   product: Partial<Product>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onCheckboxChange: (checked: boolean) => void;
+  onImageChange: (imageUrl: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
   submitLabel: string;
@@ -21,6 +23,7 @@ export default function ProductForm({
   product,
   onInputChange,
   onCheckboxChange,
+  onImageChange,
   onSubmit,
   onCancel,
   submitLabel,
@@ -95,18 +98,17 @@ export default function ProductForm({
             className="col-span-3"
           />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="image" className="text-right">
-            Image URL
+        <div className="grid grid-cols-4 items-start gap-4">
+          <Label htmlFor="image-upload" className="text-right">
+            Product Image
           </Label>
-          <Input
-            id="image"
-            name="image"
-            value={product.image || ''}
-            onChange={onInputChange}
-            className="col-span-3"
-            placeholder="/placeholder.svg"
-          />
+          <div className="col-span-3">
+            <ImageUploader 
+              onImageUploaded={onImageChange}
+              currentImage={product.image}
+              buttonText="Upload Product Image"
+            />
+          </div>
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <div className="text-right">

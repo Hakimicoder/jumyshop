@@ -21,9 +21,18 @@ export default function Login() {
     
     try {
       await signIn(email, password);
+      toast({
+        title: "Login Successful",
+        description: "You have been logged in successfully.",
+      });
       navigate('/products');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid email or password. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -81,42 +90,6 @@ export default function Login() {
               {loading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-muted-foreground">
-                  Demo accounts
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setEmail('user@example.com');
-                  setPassword('password123');
-                }}
-              >
-                User Demo
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setEmail('admin@example.com');
-                  setPassword('admin123');
-                }}
-              >
-                Admin Demo
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

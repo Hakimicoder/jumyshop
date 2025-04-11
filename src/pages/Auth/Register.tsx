@@ -33,9 +33,18 @@ export default function Register() {
     
     try {
       await signUp(email, password, username);
+      toast({
+        title: 'Registration Successful',
+        description: 'Your account has been created. You can now log in.',
+      });
       navigate('/products');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      toast({
+        title: 'Registration Failed',
+        description: error.message || 'An error occurred during registration.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }

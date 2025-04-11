@@ -9,12 +9,14 @@ import ProductTable from '@/components/Admin/ProductTable';
 import ProductForm from '@/components/Admin/ProductForm';
 import ProductDialog from '@/components/Admin/ProductDialog';
 import DeleteProductDialog from '@/components/Admin/DeleteProductDialog';
+import AdminSignUp from '@/components/Admin/AdminSignUp';
 
 export default function ProductsManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAdminSignUpOpen, setIsAdminSignUpOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,13 @@ export default function ProductsManagement() {
     setCurrentProduct(prev => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) : value
+    }));
+  };
+
+  const handleImageChange = (imageUrl: string) => {
+    setCurrentProduct(prev => ({
+      ...prev,
+      image: imageUrl
     }));
   };
 
@@ -194,14 +203,30 @@ export default function ProductsManagement() {
     setIsDeleteDialogOpen(true);
   };
 
+  const toggleAdminSignUp = () => {
+    setIsAdminSignUpOpen(!isAdminSignUpOpen);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Manage Products</h1>
-        <Button onClick={openAddDialog}>
-          <Plus className="h-4 w-4 mr-2" /> Add Product
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={toggleAdminSignUp}>
+            {isAdminSignUpOpen ? "Hide Admin Creation" : "Create Admin Account"}
+          </Button>
+          <Button onClick={openAddDialog}>
+            <Plus className="h-4 w-4 mr-2" /> Add Product
+          </Button>
+        </div>
       </div>
+
+      {/* Admin Sign Up Form */}
+      {isAdminSignUpOpen && (
+        <div className="mb-6">
+          <AdminSignUp />
+        </div>
+      )}
 
       {/* Products Table */}
       <ProductTable 
@@ -221,6 +246,7 @@ export default function ProductsManagement() {
           product={currentProduct}
           onInputChange={handleInputChange}
           onCheckboxChange={handleCheckboxChange}
+          onImageChange={handleImageChange}
           onSubmit={handleAddProduct}
           onCancel={() => setIsAddDialogOpen(false)}
           submitLabel="Save Product"
@@ -238,6 +264,7 @@ export default function ProductsManagement() {
           product={currentProduct}
           onInputChange={handleInputChange}
           onCheckboxChange={handleCheckboxChange}
+          onImageChange={handleImageChange}
           onSubmit={handleEditProduct}
           onCancel={() => setIsEditDialogOpen(false)}
           submitLabel="Update Product"
