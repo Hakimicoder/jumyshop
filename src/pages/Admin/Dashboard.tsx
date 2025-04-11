@@ -1,30 +1,52 @@
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getUsers, getProducts } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { Package, Users, Tag, Settings } from 'lucide-react';
 
 export default function Dashboard() {
-  const users = getUsers();
-  const products = getProducts();
+  const [users, setUsers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const usersData = getUsers();
+        const productsData = await getProducts();
+        
+        setUsers(usersData);
+        setProducts(productsData);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
   const featuredProducts = products.filter(product => product.featured).length;
   
   const statsData = [
     {
       title: 'Total Products',
-      value: products.length,
+      value: isLoading ? '...' : products.length,
       icon: <Package className="h-8 w-8 text-blue-500" />,
       href: '/admin/products',
     },
     {
       title: 'Featured Products',
-      value: featuredProducts,
+      value: isLoading ? '...' : featuredProducts,
       icon: <Tag className="h-8 w-8 text-yellow-500" />,
       href: '/admin/products',
     },
     {
       title: 'Registered Users',
-      value: users.length,
+      value: isLoading ? '...' : users.length,
       icon: <Users className="h-8 w-8 text-green-500" />,
       href: '/admin/users',
     },

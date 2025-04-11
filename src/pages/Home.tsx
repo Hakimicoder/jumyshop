@@ -8,10 +8,22 @@ import ProductCard from '@/components/Product/ProductCard';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const products = getProducts();
-    setFeaturedProducts(products.filter(product => product.featured).slice(0, 3));
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const products = await getProducts();
+        setFeaturedProducts(products.filter(product => product.featured).slice(0, 3));
+      } catch (error) {
+        console.error("Error loading products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
   }, []);
 
   return (
@@ -88,13 +100,19 @@ export default function Home() {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading featured products...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
           
-          {featuredProducts.length === 0 && (
+          {!isLoading && featuredProducts.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               No featured products available.
             </div>

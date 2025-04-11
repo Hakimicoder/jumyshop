@@ -1,9 +1,9 @@
 
-import { saveUsers, saveProducts, getUsers, getProducts } from '@/lib/utils';
+import { saveUsers, saveProducts } from '@/lib/utils';
 
 export const initMockData = () => {
   // Only initialize if data doesn't exist yet
-  if (getUsers().length === 0) {
+  if (!localStorage.getItem('users') || JSON.parse(localStorage.getItem('users') || '[]').length === 0) {
     const users: User[] = [
       {
         id: 1,
@@ -30,12 +30,14 @@ export const initMockData = () => {
     saveUsers(users);
   }
 
-  if (getProducts().length === 0) {
+  if (!localStorage.getItem('products') || JSON.parse(localStorage.getItem('products') || '[]').length === 0) {
     const products: Product[] = [
       {
         id: 1,
         name: 'Smart Speaker',
         description: 'Premium smart speaker with voice assistant integration for your home.',
+        subtitle: 'Premium smart speaker with voice assistant',
+        full_description: 'Premium smart speaker with voice assistant integration for your home. Features include high-quality sound, multi-room audio support, and smart home controls.',
         price: 129.99,
         image: '/lovable-uploads/e5f300e2-516e-4a8a-8801-7d9ee396ac30.png',
         category: 'Speakers',
@@ -45,8 +47,10 @@ export const initMockData = () => {
         id: 2,
         name: 'Wireless Headphones',
         description: 'Noise-cancelling headphones with 30-hour battery life.',
+        subtitle: 'Noise-cancelling with 30-hour battery',
+        full_description: 'Premium noise-cancelling headphones with 30-hour battery life. Features include active noise cancellation, high-quality audio drivers, and comfortable over-ear design.',
         price: 199.99,
-        image: '/placeholder.svg',
+        image: '/uploads/headphone.PNG',
         category: 'Audio',
         featured: true
       }

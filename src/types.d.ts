@@ -18,3 +18,11 @@ interface AuthState {
   session: any | null;
   isLoading: boolean;
 }
+
+interface User {
+  id: number;
+  username: string;
+  password: string;
+  email: string;
+  role: string;
+}

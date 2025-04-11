@@ -63,3 +63,64 @@ export function formatCurrency(amount: number): string {
     currency: 'USD'
   }).format(amount);
 }
+
+// User/Product utilities for localStorage (used for mock data)
+export function saveUsers(users: User[]): void {
+  localStorage.setItem('users', JSON.stringify(users));
+}
+
+export function getUsers(): User[] {
+  const usersStr = localStorage.getItem('users');
+  return usersStr ? JSON.parse(usersStr) : [];
+}
+
+export function saveProducts(products: Product[]): void {
+  localStorage.setItem('products', JSON.stringify(products));
+}
+
+export function getProducts(): Product[] {
+  // First try to get products from Supabase
+  return getProductsFromSupabase().then(products => {
+    if (products && products.length > 0) {
+      return products;
+    }
+    
+    // Fall back to localStorage if no products in Supabase or if fetch fails
+    const productsStr = localStorage.getItem('products');
+    return productsStr ? JSON.parse(productsStr) : [];
+  }).catch(() => {
+    // If Supabase query fails, fall back to localStorage
+    const productsStr = localStorage.getItem('products');
+    return productsStr ? JSON.parse(productsStr) : [];
+  });
+}
+
+// Utility function to get products from Supabase
+export async function getProductsFromSupabase(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*');
+  
+  if (error) {
+    console.error('Error fetching products from Supabase:', error);
+    throw error;
+  }
+  
+  return data || [];
+}
+
+// Function to get product by ID
+export async function getProductById(id: number): Promise<Product | null> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single();
+    
+  if (error) {
+    console.error(`Error fetching product with ID ${id}:`, error);
+    return null;
+  }
+  
+  return data;
+}
