@@ -5,6 +5,7 @@ import { ChevronRight, Truck, CreditCard, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getProducts } from '@/lib/utils';
 import ProductCard from '@/components/Product/ProductCard';
+import { Product } from '@/types';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);

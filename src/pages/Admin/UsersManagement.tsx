@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/providers/AuthProvider';
+import { Profile } from '@/types';
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<Profile[]>([]);

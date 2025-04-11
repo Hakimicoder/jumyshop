@@ -1,9 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getUsers, getProducts } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { Package, Users, Tag, Settings } from 'lucide-react';
+import { Product, User } from '@/types'; // <-- tes propres types ici
 
 export default function Dashboard() {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,9 +14,9 @@ export default function Dashboard() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const usersData = getUsers();
+        const usersData = await getUsers(); // Ajout du await ici
         const productsData = await getProducts();
-        
+
         setUsers(usersData);
         setProducts(productsData);
       } catch (error) {
@@ -30,7 +30,7 @@ export default function Dashboard() {
   }, []);
 
   const featuredProducts = products.filter(product => product.featured).length;
-  
+
   const statsData = [
     {
       title: 'Total Products',
@@ -77,7 +77,7 @@ export default function Dashboard() {
           </Link>
         ))}
       </div>
-      
+
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-4">Admin Actions</h2>
         <div className="grid gap-4 md:grid-cols-2">
@@ -89,8 +89,8 @@ export default function Dashboard() {
               <p className="text-muted-foreground mb-4">
                 Add, edit, or delete products from your inventory.
               </p>
-              <Link 
-                to="/admin/products" 
+              <Link
+                to="/admin/products"
                 className="text-primary font-medium hover:underline"
               >
                 Go to Products Manager
@@ -105,8 +105,8 @@ export default function Dashboard() {
               <p className="text-muted-foreground mb-4">
                 View and manage user accounts.
               </p>
-              <Link 
-                to="/admin/users" 
+              <Link
+                to="/admin/users"
                 className="text-primary font-medium hover:underline"
               >
                 Go to User Manager

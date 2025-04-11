@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { addToCart, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Product } from '@/types';
 
 interface ProductCardProps {
   product: Product;

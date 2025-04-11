@@ -1,9 +1,10 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://xidwwcmiupqolgmjhxwz.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpZHd3Y21pdXBxb2xnbWpoeHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzNjYzOTYsImV4cCI6MjA1OTk0MjM5Nn0.ZNQKVcZQfWMH-sq92uyMbaKcj1XWjoHjmcyXJWpJW3g';
+// Chargement des variables d'environnement
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
+// Typage des tables de la base Supabase
 export type Database = {
   public: {
     Tables: {
@@ -64,9 +65,40 @@ export type Database = {
   };
 };
 
+// Création du client Supabase
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    autoRefreshToken: true
-  }
+    autoRefreshToken: true,
+  },
 });
+
+// ✅ Fonction pour récupérer tous les produits
+export async function getProducts() {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('id', { ascending: true });
+
+  if (error) {
+    console.error('Erreur lors de la récupération des produits :', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// ✅ Fonction pour récupérer tous les profils/utilisateurs
+export async function getProfiles() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Erreur lors de la récupération des profils :', error);
+    return [];
+  }
+
+  return data || [];
+}

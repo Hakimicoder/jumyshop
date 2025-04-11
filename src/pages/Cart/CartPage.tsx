@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getCart } from '@/lib/utils';
+import { CartItem } from '@/types';
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
