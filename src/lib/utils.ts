@@ -1,32 +1,10 @@
 
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { supabase } from "@/integrations/supabase/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-// Authentication utilities
-export function setUser(user: User) {
-  localStorage.setItem('currentUser', JSON.stringify(user));
-}
-
-export function getUser(): User | null {
-  const userStr = localStorage.getItem('currentUser');
-  return userStr ? JSON.parse(userStr) : null;
-}
-
-export function clearUser() {
-  localStorage.removeItem('currentUser');
-}
-
-export function isAuthenticated(): boolean {
-  return !!getUser();
-}
-
-export function isAdmin(): boolean {
-  const user = getUser();
-  return user ? user.role === 'admin' : false;
 }
 
 // Cart utilities
@@ -77,25 +55,6 @@ export function clearCart() {
 export function getCartTotal(): number {
   const cart = getCart();
   return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-}
-
-// Mock data utilities
-export function saveUsers(users: User[]) {
-  localStorage.setItem('users', JSON.stringify(users));
-}
-
-export function getUsers(): User[] {
-  const usersStr = localStorage.getItem('users');
-  return usersStr ? JSON.parse(usersStr) : [];
-}
-
-export function saveProducts(products: Product[]) {
-  localStorage.setItem('products', JSON.stringify(products));
-}
-
-export function getProducts(): Product[] {
-  const productsStr = localStorage.getItem('products');
-  return productsStr ? JSON.parse(productsStr) : [];
 }
 
 export function formatCurrency(amount: number): string {

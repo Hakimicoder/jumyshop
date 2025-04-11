@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { getProducts } from '@/lib/utils';
 import ProductCard from '@/components/Product/ProductCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -16,49 +16,59 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);
+  const [loading, setLoading] = useState(true);
 
   // Fonction pour charger les produits
-  const loadProducts = () => {
-    const allProducts = getProducts();
-    setProducts(allProducts);
-    
-    // Extract categories
-    const uniqueCategories = [...new Set(allProducts.map(product => product.category))];
-    setCategories(uniqueCategories);
-    
-    // Find min and max prices
-    if (allProducts.length > 0) {
-      const prices = allProducts.map(product => product.price);
-      const min = Math.floor(Math.min(...prices));
-      const max = Math.ceil(Math.max(...prices));
-      setMinPrice(min);
-      setMaxPrice(max);
-      setPriceRange([min, max]);
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*');
+        
+      if (error) throw error;
+      
+      const productData = data || [];
+      setProducts(productData);
+      
+      // Extract categories
+      const uniqueCategories = [...new Set(productData.map(product => product.category))];
+      setCategories(uniqueCategories);
+      
+      // Find min and max prices
+      if (productData.length > 0) {
+        const prices = productData.map(product => product.price);
+        const min = Math.floor(Math.min(...prices));
+        const max = Math.ceil(Math.max(...prices));
+        setMinPrice(min);
+        setMaxPrice(max);
+        setPriceRange([min, max]);
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Charger les produits au montage du composant
   useEffect(() => {
     loadProducts();
-
-    // Écouter les événements de storage pour détecter les changements de produits
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'products') {
+    
+    // Set up a subscription for real-time updates
+    const channel = supabase
+      .channel('public:products')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'products'
+      }, () => {
         loadProducts();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Créer un intervalle de vérification supplémentaire pour s'assurer que les produits sont à jour
-    // Ce sera utile si l'admin ajoute un produit dans la même fenêtre/onglet
-    const interval = setInterval(() => {
-      loadProducts();
-    }, 5000); // Vérifier toutes les 5 secondes
-    
+      })
+      .subscribe();
+      
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -69,7 +79,7 @@ export default function ProductsPage() {
     if (searchQuery) {
       result = result.filter(product => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        product.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     
@@ -158,7 +168,11 @@ export default function ProductsPage() {
             </span>
           </div>
           
-          {filteredProducts.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <p className="text-lg text-muted-foreground">Loading products...</p>
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />

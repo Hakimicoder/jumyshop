@@ -1,61 +1,32 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getUsers, setUser, getUser } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuth();
 
-  // Vérifie si l'utilisateur connecté est un admin
-  useEffect(() => {
-    const currentUser = getUser();
-    if (currentUser && currentUser.role === 'admin') {
-      setIsAdmin(true);
-    }
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Simulate network request
-    setTimeout(() => {
-      const users = getUsers();
-      const user = users.find(
-        (u) => u.username === username && u.password === password
-      );
-
-      if (user) {
-        setUser(user);
-        toast({
-          title: 'Login Successful',
-          description: `Welcome back, ${user.username}!`,
-        });
-        
-        // Redirect based on role
-        if (user.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/products');
-        }
-      } else {
-        toast({
-          title: 'Login Failed',
-          description: 'Invalid username or password.',
-          variant: 'destructive',
-        });
-      }
+    
+    try {
+      await signIn(email, password);
+      navigate('/products');
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -76,15 +47,15 @@ export default function Login() {
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
               />
             </div>
 
@@ -111,44 +82,41 @@ export default function Login() {
             </Button>
           </form>
 
-          {/* N'affiche les boutons de démo que si l'utilisateur est un administrateur */}
-          {isAdmin && (
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-muted-foreground">
-                    Or login with demo credentials
-                  </span>
-                </div>
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
               </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setUsername('user');
-                    setPassword('user123');
-                  }}
-                >
-                  User Demo
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setUsername('adminjumael');
-                    setPassword('admin2005');
-                  }}
-                >
-                  Admin Demo
-                </Button>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-2 text-muted-foreground">
+                  Demo accounts
+                </span>
               </div>
             </div>
-          )}
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEmail('user@example.com');
+                  setPassword('password123');
+                }}
+              >
+                User Demo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEmail('admin@example.com');
+                  setPassword('admin123');
+                }}
+              >
+                Admin Demo
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

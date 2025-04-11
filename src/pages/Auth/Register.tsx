@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getUsers, saveUsers, setUser } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -15,8 +15,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
@@ -30,52 +31,14 @@ export default function Register() {
     
     setLoading(true);
     
-    // Simulate network request
-    setTimeout(() => {
-      const users = getUsers();
-      
-      // Check if username or email already exists
-      if (users.some((u) => u.username === username)) {
-        toast({
-          title: 'Registration Failed',
-          description: 'Username is already taken.',
-          variant: 'destructive',
-        });
-        setLoading(false);
-        return;
-      }
-      
-      if (users.some((u) => u.email === email)) {
-        toast({
-          title: 'Registration Failed',
-          description: 'Email is already registered.',
-          variant: 'destructive',
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // Create new user
-      const newUser: User = {
-        id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
-        username,
-        email,
-        password,
-        role: 'user',
-      };
-      
-      // Save user
-      saveUsers([...users, newUser]);
-      setUser(newUser);
-      
-      toast({
-        title: 'Registration Successful',
-        description: 'Your account has been created.',
-      });
-      
+    try {
+      await signUp(email, password, username);
       navigate('/products');
+    } catch (error) {
+      console.error('Registration error:', error);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

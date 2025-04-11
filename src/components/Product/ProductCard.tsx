@@ -81,7 +81,7 @@ export default function ProductCard({ product, showAddToCart = true }: ProductCa
       </CardContent>
       <CardFooter className="p-4 pt-0 ">
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {product.description}
+          {product.subtitle}
         </p>
       </CardFooter>
     </Card>

@@ -1,22 +1,7 @@
 
-interface User {
-  id: number;
-  username: string;
-  password: string;
-  email: string;
-  role: 'user' | 'admin';
-}
+import { Database } from './integrations/supabase/client';
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  all: string;
-  price: number;
-  image: string;
-  category: string;
-  featured: boolean;
-}
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface CartItem {
   productId: number;
@@ -24,4 +9,12 @@ interface CartItem {
   price: number;
   image: string;
   quantity: number;
+}
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+
+interface AuthState {
+  user: Profile | null;
+  session: any | null;
+  isLoading: boolean;
 }

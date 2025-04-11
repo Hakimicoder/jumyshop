@@ -1,10 +1,10 @@
 
 import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { isAuthenticated } from '@/lib/utils';
 import Header from './Header';
 import Footer from './Footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/providers/AuthProvider';
 
 interface MainLayoutProps {
   requireAuth?: boolean;
@@ -14,9 +14,10 @@ interface MainLayoutProps {
 const MainLayout = ({ requireAuth = false, children }: MainLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoading } = useAuth();
   
   useEffect(() => {
-    if (requireAuth && !isAuthenticated()) {
+    if (!isLoading && requireAuth && !user) {
       toast({
         title: "Authentication Required",
         description: "Please log in to access this page.",
@@ -24,7 +25,7 @@ const MainLayout = ({ requireAuth = false, children }: MainLayoutProps) => {
       });
       navigate('/login');
     }
-  }, [requireAuth, navigate, toast]);
+  }, [requireAuth, navigate, toast, user, isLoading]);
 
   return (
     <div className="flex flex-col min-h-screen">

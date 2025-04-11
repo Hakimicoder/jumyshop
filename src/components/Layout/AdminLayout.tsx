@@ -1,17 +1,18 @@
 
 import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { isAdmin } from '@/lib/utils';
 import Header from './Header';
 import Footer from './Footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/providers/AuthProvider';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isLoading } = useAuth();
   
   useEffect(() => {
-    if (!isAdmin()) {
+    if (!isLoading && (!user || user.role !== 'admin')) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access this area.",
@@ -19,7 +20,7 @@ const AdminLayout = () => {
       });
       navigate('/login');
     }
-  }, [navigate, toast]);
+  }, [navigate, toast, user, isLoading]);
 
   return (
     <div className="flex flex-col min-h-screen">

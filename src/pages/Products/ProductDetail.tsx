@@ -3,24 +3,42 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, ArrowLeft, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getProducts, addToCart, formatCurrency } from '@/lib/utils';
+import { addToCart, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const products = getProducts();
-    const foundProduct = products.find(p => p.id === Number(productId));
-    
-    if (foundProduct) {
-      setProduct(foundProduct);
-    }
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', Number(productId))
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setProduct(data);
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [productId]);
 
   const handleAddToCart = () => {
@@ -44,6 +62,16 @@ export default function ProductDetail() {
   const goBack = () => {
     navigate(-1);
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <div className="py-24">
+          <h1 className="text-2xl font-bold mb-4">Loading product...</h1>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -82,7 +110,7 @@ export default function ProductDetail() {
           </div>
           
           <div className="mb-8">
-            <p className="text-gray-600 mb-4">{product.all}</p>
+            <p className="text-gray-600 mb-4">{product.subtitle}</p>
             <div className="flex items-center">
               <span className="text-sm font-medium text-gray-600 mr-2">Category:</span>
               <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">
@@ -132,12 +160,7 @@ export default function ProductDetail() {
               </button>
               {isExpanded && (
                 <div className="pt-2 pb-4 text-sm text-gray-600">
-                  <ul className="list-disc pl-5 space-y-2">
-                    <li>High-quality materials</li>
-                    <li>1-year manufacturer warranty</li>
-                    <li>Free returns within 30 days</li>
-                    <li>Designed for durability and performance</li>
-                  </ul>
+                  <p>{product.full_description}</p>
                 </div>
               )}
             </div>

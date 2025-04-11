@@ -1,28 +1,50 @@
 
 import { useState, useEffect } from 'react';
-import { getUsers, saveUsers, getUser } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Trash2, UserX } from 'lucide-react';
+import { Trash2, UserX, Edit, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function UsersManagement() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [editedUsername, setEditedUsername] = useState('');
+  const [editedEmail, setEditedEmail] = useState('');
+  const [editedRole, setEditedRole] = useState<'admin' | 'user'>('user');
   const { toast } = useToast();
-  const loggedInUser = getUser();
+  const { user: loggedInUser } = useAuth();
 
   useEffect(() => {
-    loadUsers();
+    fetchUsers();
   }, []);
 
-  const loadUsers = () => {
-    const usersData = getUsers();
-    setUsers(usersData);
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+      
+      if (error) throw error;
+      
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load users.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!currentUser) return;
     
     // Prevent deleting yourself
@@ -36,33 +58,75 @@ export default function UsersManagement() {
       return;
     }
     
-    // Prevent deleting the main admin account
-    if (currentUser.username === 'admin') {
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(currentUser.id);
+      
+      if (error) throw error;
+      
+      setIsDeleteDialogOpen(false);
+      
       toast({
-        title: "Operation Denied",
-        description: "The main admin account cannot be deleted.",
+        title: "User Deleted",
+        description: `User ${currentUser.username} has been removed.`
+      });
+      
+      fetchUsers();
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Make sure you have proper permissions.",
         variant: "destructive"
       });
-      setIsDeleteDialogOpen(false);
-      return;
     }
+  };
+  
+  const handleEditUser = async () => {
+    if (!currentUser) return;
     
-    const updatedUsers = users.filter(user => user.id !== currentUser.id);
-    saveUsers(updatedUsers);
-    setUsers(updatedUsers);
-    setIsDeleteDialogOpen(false);
-    
-    toast({
-      title: "User Deleted",
-      description: `User ${currentUser.username} has been removed.`
-    });
-    
-    setCurrentUser(null);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          username: editedUsername,
+          email: editedEmail,
+          role: editedRole
+        })
+        .eq('id', currentUser.id);
+      
+      if (error) throw error;
+      
+      setIsEditDialogOpen(false);
+      
+      toast({
+        title: "User Updated",
+        description: `User ${editedUsername} has been updated.`
+      });
+      
+      fetchUsers();
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update user.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const openDeleteDialog = (user: User) => {
+  const openDeleteDialog = (user: Profile) => {
     setCurrentUser(user);
     setIsDeleteDialogOpen(true);
+  };
+  
+  const openEditDialog = (user: Profile) => {
+    setCurrentUser(user);
+    setEditedUsername(user.username);
+    setEditedEmail(user.email);
+    setEditedRole(user.role as 'admin' | 'user');
+    setIsEditDialogOpen(true);
   };
 
   return (
@@ -125,9 +189,15 @@ export default function UsersManagement() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-3">
                       <button
+                        onClick={() => openEditDialog(user)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        <Edit className="h-5 w-5" />
+                      </button>
+                      <button
                         onClick={() => openDeleteDialog(user)}
                         className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={user.id === loggedInUser?.id || user.username === 'admin'}
+                        disabled={user.id === loggedInUser?.id}
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -159,6 +229,67 @@ export default function UsersManagement() {
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser}>
               Delete User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center text-blue-500 my-4">
+            <UserCheck className="h-16 w-16" />
+          </div>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-username" className="text-right">
+                Username
+              </Label>
+              <Input
+                id="edit-username"
+                value={editedUsername}
+                onChange={(e) => setEditedUsername(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="edit-email"
+                value={editedEmail}
+                onChange={(e) => setEditedEmail(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-role" className="text-right">
+                Role
+              </Label>
+              <Select 
+                value={editedRole} 
+                onValueChange={(value) => setEditedRole(value as 'admin' | 'user')}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditUser}>
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

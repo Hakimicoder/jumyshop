@@ -1,5 +1,5 @@
+
 import { useState, useEffect } from 'react';
-import { getProducts, saveProducts } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ProductsManagement() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -15,14 +17,32 @@ export default function ProductsManagement() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadProducts();
+    fetchProducts();
   }, []);
 
-  const loadProducts = () => {
-    const productsData = getProducts();
-    setProducts(productsData);
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*');
+      
+      if (error) throw error;
+      
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load products.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -41,9 +61,9 @@ export default function ProductsManagement() {
     }));
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     // Validate required fields
-    if (!currentProduct.name || !currentProduct.description || !currentProduct.price || !currentProduct.category) {
+    if (!currentProduct.name || !currentProduct.subtitle || !currentProduct.full_description || !currentProduct.price || !currentProduct.category) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
@@ -52,32 +72,43 @@ export default function ProductsManagement() {
       return;
     }
 
-    const newProduct: Product = {
-      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      name: currentProduct.name || '',
-      description: currentProduct.description || '',
-      all: currentProduct.all || '',
-      price: currentProduct.price || 0,
-      category: currentProduct.category || '',
-      image: currentProduct.image || '/placeholder.svg',
-      featured: Boolean(currentProduct.featured)
-    };
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{
+          name: currentProduct.name || '',
+          subtitle: currentProduct.subtitle || '',
+          full_description: currentProduct.full_description || '',
+          price: currentProduct.price || 0,
+          category: currentProduct.category || '',
+          image: currentProduct.image || '/placeholder.svg',
+          featured: Boolean(currentProduct.featured)
+        }])
+        .select();
 
-    const updatedProducts = [...products, newProduct];
-    saveProducts(updatedProducts);
-    setProducts(updatedProducts);
-    setIsAddDialogOpen(false);
-    setCurrentProduct({});
+      if (error) throw error;
 
-    toast({
-      title: "Product Added",
-      description: `${newProduct.name} has been added to your inventory.`
-    });
+      toast({
+        title: "Product Added",
+        description: `${currentProduct.name} has been added to your inventory.`
+      });
+      
+      fetchProducts();
+      setIsAddDialogOpen(false);
+      setCurrentProduct({});
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add product.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleEditProduct = () => {
+  const handleEditProduct = async () => {
     // Validate required fields
-    if (!currentProduct.name || !currentProduct.description || currentProduct.price === undefined || !currentProduct.category) {
+    if (!currentProduct.name || !currentProduct.subtitle || !currentProduct.full_description || !currentProduct.price === undefined || !currentProduct.category) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
@@ -86,33 +117,65 @@ export default function ProductsManagement() {
       return;
     }
 
-    const updatedProducts = products.map(product =>
-      product.id === currentProduct.id ? { ...product, ...currentProduct } : product
-    );
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          name: currentProduct.name,
+          subtitle: currentProduct.subtitle,
+          full_description: currentProduct.full_description,
+          price: currentProduct.price,
+          category: currentProduct.category,
+          image: currentProduct.image,
+          featured: currentProduct.featured
+        })
+        .eq('id', currentProduct.id);
 
-    saveProducts(updatedProducts);
-    setProducts(updatedProducts);
-    setIsEditDialogOpen(false);
-    setCurrentProduct({});
+      if (error) throw error;
 
-    toast({
-      title: "Product Updated",
-      description: `${currentProduct.name} has been updated.`
-    });
+      toast({
+        title: "Product Updated",
+        description: `${currentProduct.name} has been updated.`
+      });
+      
+      fetchProducts();
+      setIsEditDialogOpen(false);
+      setCurrentProduct({});
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteProduct = () => {
-    const updatedProducts = products.filter(product => product.id !== currentProduct.id);
-    saveProducts(updatedProducts);
-    setProducts(updatedProducts);
-    setIsDeleteDialogOpen(false);
+  const handleDeleteProduct = async () => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', currentProduct.id);
 
-    toast({
-      title: "Product Deleted",
-      description: `${currentProduct.name} has been removed from your inventory.`
-    });
+      if (error) throw error;
 
-    setCurrentProduct({});
+      toast({
+        title: "Product Deleted",
+        description: `${currentProduct.name} has been removed from your inventory.`
+      });
+      
+      fetchProducts();
+      setIsDeleteDialogOpen(false);
+      setCurrentProduct({});
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product.",
+        variant: "destructive"
+      });
+    }
   };
 
   const openAddDialog = () => {
@@ -165,7 +228,13 @@ export default function ProductsManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-4 text-center">
+                  Loading products...
+                </td>
+              </tr>
+            ) : products.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-muted-foreground">
                   No products available.
@@ -187,11 +256,8 @@ export default function ProductsManagement() {
                         <div className="font-medium text-gray-900">
                           {product.name}
                         </div>
-                        {/* <div className="text-sm text-gray-500 line-clamp-1">
-                          {product.description}
-                        </div> */}
                         <div className="text-sm text-gray-500 line-clamp-1">
-                          {product.description}
+                          {product.subtitle}
                         </div>
                       </div>
                     </div>
@@ -251,6 +317,33 @@ export default function ProductsManagement() {
                 className="col-span-3"
               />
             </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="subtitle" className="text-right">
+                Subtitle*
+              </Label>
+              <Input
+                id="subtitle"
+                name="subtitle"
+                value={currentProduct.subtitle || ''}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Brief description - shown on cards"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="full_description" className="text-right">
+                Full Description*
+              </Label>
+              <Textarea
+                id="full_description"
+                name="full_description"
+                value={currentProduct.full_description || ''}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Detailed description - visible on product page"
+                rows={4}
+              />
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category" className="text-right">
                 Category*
@@ -278,60 +371,35 @@ export default function ProductsManagement() {
                 className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description*
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">
+                Image URL
               </Label>
               <Input
-                id="description"
-                name="description"
-                value={currentProduct.description || ''}
+                id="image"
+                name="image"
+                value={currentProduct.image || ''}
                 onChange={handleInputChange}
                 className="col-span-3"
-                placeholder='max 30 words'
+                placeholder="/placeholder.svg"
               />
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="all" className="text-right">
-                  All about product*
-                </Label>
-                <Input
-                  id="all"
-                  name="all"
-                  value={currentProduct.all || ''}
-                  onChange={handleInputChange}
-                  className="col-span-3"
-                  placeholder='no longer'
-                />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div className="text-right">
+                <Label htmlFor="featured">Featured</Label>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="image" className="text-right">
-                  Image URL
-                </Label>
-                <Input
-                  id="image"
-                  name="image"
-                  value={currentProduct.image || ''}
-                  onChange={handleInputChange}
-                  className="col-span-3"
+              <div className="flex items-center space-x-2 col-span-3">
+                <Checkbox
+                  id="featured"
+                  checked={Boolean(currentProduct.featured)}
+                  onCheckedChange={handleCheckboxChange}
                 />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div className="text-right">
-                  <Label htmlFor="featured">Featured</Label>
-                </div>
-                <div className="flex items-center space-x-2 col-span-3">
-                  <Checkbox
-                    id="featured"
-                    checked={Boolean(currentProduct.featured)}
-                    onCheckedChange={handleCheckboxChange}
-                  />
-                  <label
-                    htmlFor="featured"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Display as featured product
-                  </label>
-                </div>
+                <label
+                  htmlFor="featured"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Display as featured product
+                </label>
               </div>
             </div>
           </div>
@@ -364,6 +432,33 @@ export default function ProductsManagement() {
                 className="col-span-3"
               />
             </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="edit-subtitle" className="text-right">
+                Subtitle*
+              </Label>
+              <Input
+                id="edit-subtitle"
+                name="subtitle"
+                value={currentProduct.subtitle || ''}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Brief description - shown on cards"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="edit-full_description" className="text-right">
+                Full Description*
+              </Label>
+              <Textarea
+                id="edit-full_description"
+                name="full_description"
+                value={currentProduct.full_description || ''}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Detailed description - visible on product page"
+                rows={4}
+              />
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-category" className="text-right">
                 Category*
@@ -387,30 +482,6 @@ export default function ProductsManagement() {
                 step="0.01"
                 min="0"
                 value={currentProduct.price || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="edit-description" className="text-right">
-                Description*
-              </Label>
-              <Input
-                id="edit-description"
-                name="description"
-                value={currentProduct.description || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="edit-all" className="text-right">
-                Product info*
-              </Label>
-              <Input
-                id="edit-all"
-                name="all"
-                value={currentProduct.all || ''}
                 onChange={handleInputChange}
                 className="col-span-3"
               />
