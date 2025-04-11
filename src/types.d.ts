@@ -11,6 +11,7 @@ interface Product {
   id: number;
   name: string;
   description: string;
+  all: string;
   price: number;
   image: string;
   category: string;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { getProducts, saveProducts } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,7 @@ export default function ProductsManagement() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+
     setCurrentProduct(prev => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) : value
@@ -57,18 +56,19 @@ export default function ProductsManagement() {
       id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
       name: currentProduct.name || '',
       description: currentProduct.description || '',
+      all: currentProduct.all || '',
       price: currentProduct.price || 0,
       category: currentProduct.category || '',
       image: currentProduct.image || '/placeholder.svg',
       featured: Boolean(currentProduct.featured)
     };
-    
+
     const updatedProducts = [...products, newProduct];
     saveProducts(updatedProducts);
     setProducts(updatedProducts);
     setIsAddDialogOpen(false);
     setCurrentProduct({});
-    
+
     toast({
       title: "Product Added",
       description: `${newProduct.name} has been added to your inventory.`
@@ -86,15 +86,15 @@ export default function ProductsManagement() {
       return;
     }
 
-    const updatedProducts = products.map(product => 
+    const updatedProducts = products.map(product =>
       product.id === currentProduct.id ? { ...product, ...currentProduct } : product
     );
-    
+
     saveProducts(updatedProducts);
     setProducts(updatedProducts);
     setIsEditDialogOpen(false);
     setCurrentProduct({});
-    
+
     toast({
       title: "Product Updated",
       description: `${currentProduct.name} has been updated.`
@@ -106,12 +106,12 @@ export default function ProductsManagement() {
     saveProducts(updatedProducts);
     setProducts(updatedProducts);
     setIsDeleteDialogOpen(false);
-    
+
     toast({
       title: "Product Deleted",
       description: `${currentProduct.name} has been removed from your inventory.`
     });
-    
+
     setCurrentProduct({});
   };
 
@@ -141,7 +141,7 @@ export default function ProductsManagement() {
           <Plus className="h-4 w-4 mr-2" /> Add Product
         </Button>
       </div>
-      
+
       {/* Products Table */}
       <div className="border rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -177,8 +177,8 @@ export default function ProductsManagement() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded overflow-hidden">
-                        <img 
-                          src={product.image || '/placeholder.svg'} 
+                        <img
+                          src={product.image || '/placeholder.svg'}
                           alt={product.name}
                           className="h-full w-full object-cover"
                         />
@@ -187,6 +187,9 @@ export default function ProductsManagement() {
                         <div className="font-medium text-gray-900">
                           {product.name}
                         </div>
+                        {/* <div className="text-sm text-gray-500 line-clamp-1">
+                          {product.description}
+                        </div> */}
                         <div className="text-sm text-gray-500 line-clamp-1">
                           {product.description}
                         </div>
@@ -228,7 +231,7 @@ export default function ProductsManagement() {
           </tbody>
         </table>
       </div>
-      
+
       {/* Add Product Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
@@ -285,39 +288,54 @@ export default function ProductsManagement() {
                 value={currentProduct.description || ''}
                 onChange={handleInputChange}
                 className="col-span-3"
+                placeholder='max 30 words'
               />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="image"
-                name="image"
-                value={currentProduct.image || ''}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="text-right">
-                <Label htmlFor="featured">Featured</Label>
-              </div>
-              <div className="flex items-center space-x-2 col-span-3">
-                <Checkbox
-                  id="featured"
-                  checked={Boolean(currentProduct.featured)}
-                  onCheckedChange={handleCheckboxChange}
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="all" className="text-right">
+                  All about product*
+                </Label>
+                <Input
+                  id="all"
+                  name="all"
+                  value={currentProduct.all || ''}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                  placeholder='no longer'
                 />
-                <label
-                  htmlFor="featured"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Display as featured product
-                </label>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="image" className="text-right">
+                  Image URL
+                </Label>
+                <Input
+                  id="image"
+                  name="image"
+                  value={currentProduct.image || ''}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <div className="text-right">
+                  <Label htmlFor="featured">Featured</Label>
+                </div>
+                <div className="flex items-center space-x-2 col-span-3">
+                  <Checkbox
+                    id="featured"
+                    checked={Boolean(currentProduct.featured)}
+                    onCheckedChange={handleCheckboxChange}
+                  />
+                  <label
+                    htmlFor="featured"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Display as featured product
+                  </label>
+                </div>
               </div>
             </div>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancel
@@ -326,7 +344,7 @@ export default function ProductsManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Edit Product Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
@@ -385,6 +403,18 @@ export default function ProductsManagement() {
                 className="col-span-3"
               />
             </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="edit-all" className="text-right">
+                Product info*
+              </Label>
+              <Input
+                id="edit-all"
+                name="all"
+                value={currentProduct.all || ''}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-image" className="text-right">
                 Image URL
@@ -424,7 +454,7 @@ export default function ProductsManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Product Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>

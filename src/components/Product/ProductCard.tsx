@@ -79,7 +79,7 @@ export default function ProductCard({ product, showAddToCart = true }: ProductCa
         <h3 className="font-medium text-lg mb-1 line-clamp-1">{product.name}</h3>
         <p className="text-primary font-bold">{formatCurrency(product.price)}</p>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 ">
         <p className="text-sm text-muted-foreground line-clamp-2">
           {product.description}
         </p>

@@ -82,7 +82,7 @@ export default function ProductDetail() {
           </div>
           
           <div className="mb-8">
-            <p className="text-gray-600 mb-4">{product.description}</p>
+            <p className="text-gray-600 mb-4">{product.all}</p>
             <div className="flex items-center">
               <span className="text-sm font-medium text-gray-600 mr-2">Category:</span>
               <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">

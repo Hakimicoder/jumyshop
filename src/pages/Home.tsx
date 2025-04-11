@@ -22,7 +22,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                Latest Audio System
+                Latest Audio <span className="text-primary">System</span>
               </h1>
               <p className="text-xl text-gray-300">
                 Premium sound quality with smart features. Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur reiciendis quo in impedit explicabo nulla!
@@ -42,7 +42,7 @@ export default function Home() {
               <img 
                 src="/uploads/headphone2.png" 
                 alt="Featured Audio System" 
-                className="w-full h-auto"
+                className="w-full h-auto logo-bounce"
               />
             </div>
           </div>

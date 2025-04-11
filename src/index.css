@@ -82,6 +82,27 @@
   color: white;
 }
 
+.logo-bounce {
+  transition: 300ms;
+  animation: logo-bounce infinite 10s linear;
+}
+
+@keyframes logo-bounce {
+  0% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(-10deg);
+  }
+  100% {
+    transform: rotate(0deg);
+    
+  }
+}
+
 .product-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
